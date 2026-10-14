@@ -1,53 +1,43 @@
 # AgentEval Lab
 
-A framework for evaluating and improving the reliability of LLM-powered agents. It measures accuracy, hallucination rate, evidence-groundedness, and latency, enabling comparisons before and after targeted improvements on the same evaluation dataset.
+A framework for evaluating and improving the reliability of LLM-powered agents:
+accuracy, hallucination rate, evidence-groundedness, and latency, measured
+before and after targeted improvements on the same dataset.
 
-**Status:** Phase 1 (skeleton and dataset) complete. Phases 2–7 are planned, not yet implemented.
+**Status:** Phases 1-2 built. Phases 3-7 are planned, not built.
 
-## Project Structure
+## Layout
+- `data/corpus/`: fictional document corpus (fictional on purpose, so answers can't come from model pretraining)
+- `data/eval_set.jsonl`: test cases (question, expected answer, verbatim evidence quotes)
+- `agenteval/schema.py`, `dataset.py`: schema, loading, and validation
+- `agenteval/llm.py`: provider-agnostic client interface plus a mock for offline tests
+- `agenteval/retrieval.py`: sentence-level BM25 retriever
+- `agenteval/agent.py`: baseline RAG agent (prompt version `baseline-v1`)
+- `agenteval/clients.py`: Anthropic and OpenAI-compatible (incl. local Ollama) clients
+- `agenteval/run.py`: runs the agent over the eval set and saves raw results
+- `tests/`: pytest suite
 
-* `data/corpus/`: Fictional document corpus designed to reduce the chance of answers being available through model pretraining.
-* `data/eval_set.jsonl`: Evaluation cases containing questions, expected answers, and supporting evidence quotes.
-* `agenteval/schema.py`: Evaluation data schema.
-* `agenteval/dataset.py`: Dataset loading and validation.
-* `agenteval/llm.py`: Provider-agnostic LLM client interface and mock client for offline testing.
-* `tests/`: Automated tests using pytest.
-
-## Getting Started
-
-### Requirements
-
-* Python 3.10 or newer
-* pip
-
-### Installation
-
-Create and activate a virtual environment, then install the project and its development dependencies:
-
+## Quick start
 ```bash
 pip install -e ".[dev]"
+pytest
 ```
 
-### Run Tests
-
+## Running the baseline
 ```bash
-python -m pytest
+python -m agenteval.run --provider mock --out reports/mock.jsonl          # offline smoke test
+export ANTHROPIC_API_KEY=...   # pip install -e ".[anthropic]"
+python -m agenteval.run --provider anthropic --model <model-name> --out reports/baseline.jsonl
+# or any OpenAI-compatible endpoint (OpenAI, Ollama at http://localhost:11434/v1, ...)
+OPENAI_BASE_URL=... OPENAI_API_KEY=... python -m agenteval.run --provider openai-compat --model <model-name>
 ```
+Results are raw answers plus retrieved passages, latency, and token counts. Scoring comes in Phase 3.
 
-## Project Roadmap
-
-1. **Skeleton and dataset:** Project structure, evaluation dataset, schema, and initial tests. *(Complete)*
-2. **Baseline agent:** Implement document retrieval and LLM-based answering.
-3. **Evaluation pipeline:** Calculate accuracy, groundedness, hallucination-related metrics, and latency.
-4. **Metric tests:** Validate metric calculations using controlled examples.
-5. **Failure analysis:** Categorize errors such as poor retrieval, ignored evidence, fabricated details, and incorrect refusals.
-6. **Improvement and re-evaluation:** Apply targeted changes and compare results on the same evaluation dataset.
-7. **FastAPI and reporting:** Add API endpoints and generate evaluation reports.
-
-## Testing
-
-The initial project test suite contains seven tests. Run `python -m pytest` to execute the suite.
-
-## License
-
-No license has been added yet.
+## Roadmap
+1. Skeleton and dataset (done)
+2. Baseline agent (retrieval + LLM) (done)
+3. Evaluation pipeline and metrics
+4. Metric tests
+5. Failure analysis
+6. Improvement and re-evaluation
+7. FastAPI and final report
