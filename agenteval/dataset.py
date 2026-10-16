@@ -27,6 +27,7 @@ def load_dataset(path: str | Path) -> list[TestCase]:
                     answerable=raw["answerable"],
                     expected_answer=raw["expected_answer"],
                     evidence=[Evidence(**e) for e in raw.get("evidence", [])],
+                    key_facts=raw.get("key_facts", []),
                 )
             )
     return cases
@@ -47,11 +48,15 @@ def validate_dataset(cases: list[TestCase], corpus: dict[str, str]) -> list[str]
                 errors.append(f"{c.id}: answerable case needs an expected_answer")
             if not c.evidence:
                 errors.append(f"{c.id}: answerable case needs evidence")
+            if not c.key_facts:
+                errors.append(f"{c.id}: answerable case needs key_facts")
         else:
             if c.expected_answer is not None:
                 errors.append(f"{c.id}: unanswerable case must have expected_answer null")
             if c.evidence:
                 errors.append(f"{c.id}: unanswerable case must have no evidence")
+            if c.key_facts:
+                errors.append(f"{c.id}: unanswerable case must have no key_facts")
             if c.category != "unanswerable":
                 errors.append(f"{c.id}: unanswerable case must use category 'unanswerable'")
         for e in c.evidence:

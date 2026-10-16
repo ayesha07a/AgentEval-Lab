@@ -13,6 +13,7 @@ def make_case(**overrides):
     base = dict(
         id="t1", question="q?", category="factual", answerable=True,
         expected_answer="a", evidence=[Evidence("helio_fares.md", "Children under 6 ride free.")],
+        key_facts=["free"],
     )
     base.update(overrides)
     return TestCase(**base)
@@ -49,3 +50,8 @@ def test_unanswerable_with_answer_detected():
 def test_mock_client_returns_response():
     r = MockClient(lambda p: p.upper()).complete("hi")
     assert r.text == "HI" and r.latency_s >= 0
+
+
+def test_answerable_without_key_facts_detected():
+    errors = validate_dataset([make_case(key_facts=[])], CORPUS)
+    assert any("needs key_facts" in e for e in errors)

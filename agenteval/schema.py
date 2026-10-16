@@ -21,3 +21,6 @@ class TestCase:
     answerable: bool
     expected_answer: str | None  # None when the question is unanswerable
     evidence: list[Evidence] = field(default_factory=list)
+    # Facts an answer must contain to count as correct. Each item may list alternatives
+    # separated by '|' (e.g. "all|three"). Used by the deterministic scorer.
+    key_facts: list[str] = field(default_factory=list)
